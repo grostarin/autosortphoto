@@ -1,7 +1,7 @@
 # autosortphoto
 
-move photo from ORIGIN_DIRECTORY to DESTINATION_DIRECTORY\YYYY\MM
-Not sorted photo are moved in DESTINATION_DIRECTORY_ERROR
+BASH script which move photo from ORIGIN_DIRECTORY to DESTINATION_DIRECTORY\YYYY\MM
+unsorted photo are moved in DESTINATION_DIRECTORY_ERROR
 
 Requirement : exiftool
 
