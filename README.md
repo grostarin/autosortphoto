@@ -5,7 +5,11 @@ unsorted photo are moved in DESTINATION_DIRECTORY_ERROR
 
 Requirement : exiftool
 
-Parameter, in "sort_photo.nas.script.sh". set your own, example :
-- ORIGIN_DIRECTORY=`echo "/volume1/upload/photo"`
-- DESTINATION_DIRECTORY=`echo "/volume1/photo"`
-- DESTINATION_DIRECTORY_ERROR=`echo "/volume1/photo/error"`
+Parameters, in "autosortphoto.script.sh". set your owns, example :
+
+```bash
+ORIGIN_DIRECTORY="/volume1/upload/photo"
+DESTINATION_DIRECTORY="/volume1/photo"
+DESTINATION_DIRECTORY_ERROR="/volume1/photo/error"
+EXIFTOOL_BINARY_PATH="./exiftool/exiftool"
+```
