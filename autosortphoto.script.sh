@@ -1,15 +1,18 @@
 #!/bin/bash
 
+# exit on first error
+set -e
+
 files_moved=0
 old_IFS=$IFS
 IFS=$'\n'
 
 echo "$(date) - SORT PHOTO NAS STARTING..."
 
-ORIGIN_DIRECTORY="./photo_in"
-DESTINATION_DIRECTORY="./photo_sorted"
-DESTINATION_DIRECTORY_ERROR="./photo_sorted/error"
-EXIFTOOL_BINARY_PATH="./exiftool/exiftool"
+ORIGIN_DIRECTORY="/volume1/upload/photo"
+DESTINATION_DIRECTORY="/volume1/photo"
+DESTINATION_DIRECTORY_ERROR="/volume1/photo/error"
+EXIFTOOL_BINARY_PATH="/volume1/homes/autosortphoto/exiftool/exiftool"
 
 DO_SYNOINDEX=true
 
@@ -17,24 +20,24 @@ for FILE in `find "$ORIGIN_DIRECTORY" -type f`; do
 	echo "----------------------------------------------------------------------"
 	echo "FILE : $FILE"
 	if [ "$DO_SYNOINDEX" = true ] ; then
-		echo "synoindex"
+		#echo "synoindex will be executed"
 		DO_SYNOINDEX_ON_FILE=true
 	fi
 
 	chown autosortphoto $FILE
-	chgrp Photostation $FILE
-	chmod 755 $FILE
+	chgrp administrators $FILE
+	chmod 744 $FILE
 
 	EXT=`echo ${FILE/*./}`
-	# echo "EXT : $EXT"
+	#echo "EXT : $EXT"
 
 	# MD5SUM du fichier
 	MD5SUM=`cksum $FILE | cut -d " " -f 1`
-	# echo "MD5SUM : $MD5SUM"
+	#echo "MD5SUM : $MD5SUM"
 	
-	EXIFTOOL_CREATION_DATE=$($EXIFTOOL_BINARY_PATH $FILE | grep -m1 --text "Create Date")
-	EXIFTOOL_MODIFICATION_DATE=$($EXIFTOOL_BINARY_PATH $FILE | grep -m1 --text "Date/Time Original")
+	EXIFTOOL_CREATION_DATE=$($EXIFTOOL_BINARY_PATH $FILE | grep -m1 --text "Create Date" || true)
 	#echo "EXIFTOOL_CREATION_DATE : $EXIFTOOL_CREATION_DATE"
+	EXIFTOOL_MODIFICATION_DATE=$($EXIFTOOL_BINARY_PATH $FILE | grep -m1 --text "Date/Time Original" || true)
 	#echo "EXIFTOOL_MODIFICATION_DATE : $EXIFTOOL_MODIFICATION_DATE"
 	DESTINATION_DIRECTORY_YEAR=''
 
@@ -79,25 +82,25 @@ for FILE in `find "$ORIGIN_DIRECTORY" -type f`; do
     fi
 
 	if [ ! -d "$DESTINATION_DIRECTORY" ]; then
-		# echo "CREATING $DESTINATION_DIRECTORY"
+		echo "CREATING $DESTINATION_DIRECTORY"
 		mkdir $DESTINATION_DIRECTORY
 		chown autosortphoto $DESTINATION_DIRECTORY
-		chgrp Photostation $DESTINATION_DIRECTORY
-		chmod 755 $DESTINATION_DIRECTORY
+		chgrp administrators $DESTINATION_DIRECTORY
+		chmod 744 $DESTINATION_DIRECTORY
 	fi
 	if [ ! -d "$DESTINATION_DIRECTORY_YEAR" ]; then
-		# echo "CREATING $DESTINATION_DIRECTORY_YEAR"
+		echo "CREATING $DESTINATION_DIRECTORY_YEAR"
 		mkdir $DESTINATION_DIRECTORY_YEAR
 		chown autosortphoto $DESTINATION_DIRECTORY_YEAR
-		chgrp Photostation $DESTINATION_DIRECTORY_YEAR
-		chmod 755 $DESTINATION_DIRECTORY_YEAR
+		chgrp administrators $DESTINATION_DIRECTORY_YEAR
+		chmod 744 $DESTINATION_DIRECTORY_YEAR
 	fi
 	if [ ! -d "$DESTINATION_DIRECTORY_MONTH" ]; then
-		# echo "CREATING $DESTINATION_DIRECTORY_MONTH"
+		echo "CREATING $DESTINATION_DIRECTORY_MONTH"
 		mkdir $DESTINATION_DIRECTORY_MONTH
 		chown autosortphoto $DESTINATION_DIRECTORY_MONTH
-		chgrp Photostation $DESTINATION_DIRECTORY_MONTH
-		chmod 755 $DESTINATION_DIRECTORY_MONTH
+		chgrp administrators $DESTINATION_DIRECTORY_MONTH
+		chmod 744 $DESTINATION_DIRECTORY_MONTH
 	fi
 
 	DESTINATION_COMPLETE=$DESTINATION_DIRECTORY_MONTH/$DESTINATION_FILENAME
@@ -105,7 +108,7 @@ for FILE in `find "$ORIGIN_DIRECTORY" -type f`; do
 
 	if [ ! -f "$DESTINATION_COMPLETE" ]; then
 		echo "MOVING TO $DESTINATION_COMPLETE"
-		#mv $FILE $DESTINATION_COMPLETE
+		mv $FILE $DESTINATION_COMPLETE
 		files_moved=$((files_moved+1))
 		echo "File moved to $DESTINATION_COMPLETE"
 	else
@@ -113,7 +116,7 @@ for FILE in `find "$ORIGIN_DIRECTORY" -type f`; do
 		MD5SUM2=`cksum $DESTINATION_COMPLETE | cut -d " " -f 1`
 		if [ $MD5SUM = $MD5SUM2 ]; then
 			echo "File already exists AND same checksum... Skipping..."
-			#rm -f $FILE
+			rm -f $FILE
 			DO_SYNOINDEX_ON_FILE=false
 		else
 			echo "Searching for a file name..."
@@ -131,7 +134,7 @@ for FILE in `find "$ORIGIN_DIRECTORY" -type f`; do
 				echo "TRYING DESTINATION_COMPLETE : $DESTINATION_COMPLETE"
 				if [ ! -f "$DESTINATION_COMPLETE" ]; then
 					echo "MOVING TO $DESTINATION_COMPLETE"
-					#mv $FILE $DESTINATION_COMPLETE
+					mv $FILE $DESTINATION_COMPLETE
 					files_moved=$((files_moved+1))
 					let "FINISHED = 1"
 					echo "file moved to $DESTINATION_COMPLETE"
@@ -150,19 +153,21 @@ for FILE in `find "$ORIGIN_DIRECTORY" -type f`; do
 		fi
 	fi
 	if [ "$DO_SYNOINDEX_ON_FILE" = true ] ; then
-		echo "synoindex"
+		#echo "synoindex"
 		synoindex -a $DESTINATION_COMPLETE
 	fi
 done
 
-ORIGIN_SUBDIRS=`echo "$ORIGIN_DIRECTORY/*"`
-
 # Remove unused directories
-find $ORIGIN_SUBDIRS -type d -exec rmdir 2>/dev/null {} \;
-#rm -fR ORIGIN_SUBDIRS
+echo "Removing directories in $ORIGIN_DIRECTORY"
+ORIGIN_SUBDIRS="$ORIGIN_DIRECTORY"
+find $ORIGIN_SUBDIRS -mindepth 1 -type d | while IFS= read -r directory; do
+	echo "Removing $directory"
+	rmdir $directory
+done
 
+# Closing
 echo "TOTAL FILES MOVED = $files_moved"
-
 echo "$(date) - SORT PHOTO NAS STOPING"
 
 IFS=$old_IFS
