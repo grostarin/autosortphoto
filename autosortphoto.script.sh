@@ -16,9 +16,10 @@ EXIFTOOL_BINARY_PATH="/volume1/homes/autosortphoto/exiftool/exiftool"
 
 DO_SYNOINDEX=true
 
-echo "Removing @eaDir in $ORIGIN_DIRECTORY"
+echo "Removing all @eaDir directories in $ORIGIN_DIRECTORY"
 find $ORIGIN_DIRECTORY -type d -name "@eaDir" -print0 | xargs -0 rm -rf
 
+echo "Sorting all files from $ORIGIN_DIRECTORY to $DESTINATION_DIRECTORY (errors in $DESTINATION_DIRECTORY_ERROR using exiftool : $EXIFTOOL_BINARY_PATH)"
 for FILE in `find "$ORIGIN_DIRECTORY" -type f -not -path "**/@eaDir/*"` ; do
 	echo "----------------------------------------------------------------------"
 	echo "FILE : $FILE"
