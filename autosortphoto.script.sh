@@ -16,7 +16,10 @@ EXIFTOOL_BINARY_PATH="/volume1/homes/autosortphoto/exiftool/exiftool"
 
 DO_SYNOINDEX=true
 
-for FILE in `find "$ORIGIN_DIRECTORY" -type f`; do
+echo "Removing @eaDir in $ORIGIN_DIRECTORY"
+find $ORIGIN_DIRECTORY -type d -name "@eaDir" -print0 | xargs -0 rm -rf
+
+for FILE in `find "$ORIGIN_DIRECTORY" -type f -not -path "**/@eaDir/*"` ; do
 	echo "----------------------------------------------------------------------"
 	echo "FILE : $FILE"
 	if [ "$DO_SYNOINDEX" = true ] ; then
@@ -165,6 +168,10 @@ find $ORIGIN_SUBDIRS -mindepth 1 -type d | while IFS= read -r directory; do
 	echo "Removing $directory"
 	rmdir $directory
 done
+
+# Reindex origin directory
+echo "Reindexing $ORIGIN_DIRECTORY"
+synoindex -R $ORIGIN_DIRECTORY
 
 # Closing
 echo "TOTAL FILES MOVED = $files_moved"
