@@ -165,7 +165,7 @@ done
 # Remove unused directories
 echo "Removing directories in $ORIGIN_DIRECTORY"
 ORIGIN_SUBDIRS="$ORIGIN_DIRECTORY"
-find $ORIGIN_SUBDIRS -mindepth 1 -type d | while IFS= read -r directory; do
+find $ORIGIN_SUBDIRS -mindepth 1 -type d -empty | while IFS= read -r directory; do
 	echo "Removing $directory"
 	rmdir $directory
 done
