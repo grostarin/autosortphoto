@@ -109,6 +109,7 @@ for FILE in `find "$ORIGIN_DIRECTORY" -type f -not -path "**/@eaDir/*"` ; do
 		chown autosortphoto $DESTINATION_DIRECTORY_MONTH
 		chgrp administrators $DESTINATION_DIRECTORY_MONTH
 		chmod 744 $DESTINATION_DIRECTORY_MONTH
+		synoindex -A $DESTINATION_DIRECTORY_MONTH
 	fi
 
 	if [ ! -f "$DESTINATION_COMPLETE" ]; then
